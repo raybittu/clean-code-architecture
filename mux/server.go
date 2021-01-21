@@ -199,7 +199,6 @@ func UpdateData(db *sql.DB, id int, c Customer) Customer {
 	query = query[:len(query)-1]
 	query += "where cus_id = ?"
 	data = append(data, id)
-
 	_, err := db.Exec(query, data...)
 
 	if err != nil {
