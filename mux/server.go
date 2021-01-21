@@ -15,18 +15,18 @@ import (
 )
 
 type Address struct {
-	Id         int    `json:id`
-	StreetName string `json:streetName`
-	City       string `json:city`
-	State      string `json:state`
-	CusId      int    `json:cusId`
+	Id         int    `json:"id"`
+	StreetName string `json:"streetName"`
+	City       string `json:"city"`
+	State      string `json:"state"`
+	CusId      int    `json:"cusId"`
 }
 
 type Customer struct {
-	Id      int     `json:id`
-	Name    string  `json:name`
-	Dob     string  `json:dob`
-	Address Address `json:address`
+	Id      int     `json:"id"`
+	Name    string  `json:"name"`
+	Dob     string  `json:"dob"`
+	Address Address `json:"address"`
 }
 
 var db, dbErr = sql.Open("mysql", "root:1118209@/Customer_service")
@@ -197,9 +197,8 @@ func UpdateData(db *sql.DB, id int, c Customer) Customer {
 		data = append(data, c.Address.StreetName)
 	}
 	query = query[:len(query)-1]
-	query += "where cus_id = ? and id = ?"
+	query += "where cus_id = ?"
 	data = append(data, id)
-	data = append(data, c.Address.Id)
 
 	_, err := db.Exec(query, data...)
 
@@ -207,7 +206,7 @@ func UpdateData(db *sql.DB, id int, c Customer) Customer {
 		log.Fatal(err)
 	}
 
-	rows, _ := db.Query("select * from cust inner join addrs on cust.id=addrs.cus_id and addrs.id=? and cust.id=?", c.Address.Id, id)
+	rows, _ := db.Query("select * from cust inner join addrs on cust.id=addrs.cus_id and cust.id=?", id)
 	var customer Customer
 	for rows.Next() {
 		rows.Scan(&customer.Id, &customer.Name, &customer.Dob, &customer.Address.Id, &customer.Address.StreetName, &customer.Address.City, &customer.Address.State, &customer.Address.CusId)
@@ -231,7 +230,7 @@ func PutCustomerHandler(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(Customer{})
 		}
-		if (customer.Id != 0 || customer.Dob != "") || (customer.Name == "" && customer.Address.Id == 0 && customer.Address.State == "" && customer.Address.City == "" && customer.Address.StreetName == "") {
+		if (customer.Id != 0 || customer.Dob != "") || (customer.Name == "" && customer.Address.State == "" && customer.Address.City == "" && customer.Address.StreetName == "") {
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(Customer{})
 		} else {
@@ -239,7 +238,6 @@ func PutCustomerHandler(w http.ResponseWriter, r *http.Request) {
 			json.NewEncoder(w).Encode(customer)
 		}
 	}
-
 }
 
 func DeleteData(db *sql.DB, id int) Customer {
