@@ -11,20 +11,20 @@ import (
 )
 
 type CustomerService struct {
-	store store.CustomerStore
+	store store.Customer
 }
 
-func New(customer store.CustomerStore) CustomerService {
+func New(customer store.Customer) CustomerService {
 	return CustomerService{store: customer}
 }
 
-func (c CustomerService) Get(w http.ResponseWriter, id int) {
+func (c CustomerService) GetById(w http.ResponseWriter, id int) {
 	if id <= 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("id can't be less than 1"))
 		return
 	}
-	resp, err := c.store.GetById(id)
+	resp, err := c.store.GetByID(id)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode([]entities.Customer(nil))

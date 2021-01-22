@@ -10,11 +10,11 @@ type CustomerStore struct {
 	db *sql.DB
 }
 
-func New(db *sql.DB) CustomerStore {
+func New(db *sql.DB) Customer {
 	return CustomerStore{db: db}
 }
 
-func (c CustomerStore) GetById(id int) (entities.Customer, error) {
+func (c CustomerStore) GetByID(id int) (entities.Customer, error) {
 	rows, err := c.db.Query("select * from cust inner join addrs on cust.id=addrs.cus_id and cust.id=? order by cust.id, addrs.id", id)
 	if err != nil {
 		return entities.Customer{}, err

@@ -29,7 +29,7 @@ func (c CustomerHandler) GetById(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	c.service.Get(w, id)
+	c.service.GetById(w, id)
 
 }
 
