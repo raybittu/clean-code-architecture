@@ -29,8 +29,11 @@ func New() Customer {
 }
 
 func (c CustomerStore) GetByID(id int) (entities.Customer, error) {
+	query := "select * from cust inner join addrs on cust.id=addrs.cus_id and cust.id=? order by cust.id, addrs.id"
 
-	rows, err := c.db.Query("select * from cust inner join addrs on cust.id=addrs.cus_id and cust.id=? order by cust.id, addrs.id", id)
+	var DataInterface []interface{}
+	DataInterface = append(DataInterface, id)
+	rows, err := c.db.Query(query, DataInterface...)
 	if err != nil {
 		return entities.Customer{}, err
 	}
@@ -69,8 +72,12 @@ func (c CustomerStore) GetByName(name string) ([]entities.Customer, error) {
 }
 
 func (c CustomerStore) Create(customer entities.Customer) (entities.Customer, error) {
+	query := "insert into cust (name, dob) values (?, ?)"
+	var CustomerData []interface{}
+	CustomerData = append(CustomerData, customer.Name)
+	CustomerData = append(CustomerData, customer.DOB)
 
-	rows, err := c.db.Exec("insert into cust (name, dob) values (?, ?)", customer.Name, customer.DOB)
+	rows, err := c.db.Exec(query, CustomerData...)
 	if err != nil {
 		return entities.Customer{}, err
 	}
@@ -80,7 +87,13 @@ func (c CustomerStore) Create(customer entities.Customer) (entities.Customer, er
 	if err1 != nil {
 		return entities.Customer{}, err
 	} else {
-		rows, err = c.db.Exec("insert into addrs (streetname, city, state, cus_id) values (?, ?, ?, ?)", customer.Address.StreetName, customer.Address.City, customer.Address.State, id)
+		query = "insert into addrs (streetname, city, state, cus_id) values (?, ?, ?, ?)"
+		var AddressData []interface{}
+		AddressData = append(AddressData, customer.Address.StreetName)
+		AddressData = append(AddressData, customer.Address.City)
+		AddressData = append(AddressData, customer.Address.State)
+		AddressData = append(AddressData, id)
+		rows, err = c.db.Exec(query, AddressData...)
 		if err == nil {
 			customer.ID = int(id)
 			addressId, _ := rows.LastInsertId()
@@ -94,7 +107,8 @@ func (c CustomerStore) Create(customer entities.Customer) (entities.Customer, er
 
 func (c CustomerStore) Update(id int, customer entities.Customer) (entities.Customer, error) {
 	if customer.Name != "" {
-		_, err := c.db.Exec("update cust set name=? where id=?", customer.Name, id)
+		query := "update cust set name=? where id=?"
+		_, err := c.db.Exec(query, customer.Name, id)
 		if err != nil {
 			return entities.Customer{}, nil
 		}
@@ -121,8 +135,8 @@ func (c CustomerStore) Update(id int, customer entities.Customer) (entities.Cust
 	if err != nil {
 		return entities.Customer{}, err
 	}
-
-	rows, _ := c.db.Query("select * from cust inner join addrs on cust.id=addrs.cus_id and cust.id=?", id)
+	query = "select * from cust inner join addrs on cust.id=addrs.cus_id and cust.id=?"
+	rows, _ := c.db.Query(query, id)
 	var cust entities.Customer
 	for rows.Next() {
 		_ = rows.Scan(&cust.ID, &cust.Name, &cust.DOB, &cust.Address.ID, &cust.Address.StreetName, &cust.Address.City, &cust.Address.State, &cust.Address.CusId)
@@ -131,7 +145,8 @@ func (c CustomerStore) Update(id int, customer entities.Customer) (entities.Cust
 }
 
 func (c CustomerStore) Delete(id int) (entities.Customer, error) {
-	rows, err := c.db.Query("select * from cust inner join addrs on addrs.cus_id=cust.id and cust.id=? order by cust.id, addrs.id", id)
+	query := "select * from cust inner join addrs on addrs.cus_id=cust.id and cust.id=? order by cust.id, addrs.id"
+	rows, err := c.db.Query(query, id)
 	if err != nil {
 		return entities.Customer{}, err
 	}
@@ -139,7 +154,9 @@ func (c CustomerStore) Delete(id int) (entities.Customer, error) {
 	for rows.Next() {
 		_ = rows.Scan(&cust.ID, &cust.Name, &cust.DOB, &cust.Address.ID, &cust.Address.StreetName, &cust.Address.City, &cust.Address.State, &cust.Address.CusId)
 	}
-	_, err = c.db.Exec("delete from cust where id=?", id)
+
+	query = "delete from cust where id=?"
+	_, err = c.db.Exec(query, id)
 	if err != nil {
 		return entities.Customer{}, err
 	}
