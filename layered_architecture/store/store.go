@@ -10,7 +10,21 @@ type CustomerStore struct {
 	db *sql.DB
 }
 
-func New(db *sql.DB) Customer {
+func (c CustomerStore) Close() {
+	c.db.Close()
+}
+
+func New() Customer {
+	var db, dbErr = sql.Open("mysql", "root:1118209@/Customer_service")
+	if dbErr != nil {
+		panic(dbErr)
+	}
+	//defer db.Close()
+
+	dbErr = db.Ping()
+	if dbErr != nil {
+		panic(dbErr.Error()) // proper error handling instead of panic in your app
+	}
 	return CustomerStore{db: db}
 }
 

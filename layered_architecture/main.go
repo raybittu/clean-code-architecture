@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"log"
 	"net/http"
 
@@ -14,18 +13,9 @@ import (
 )
 
 func main() {
-	var db, dbErr = sql.Open("mysql", "root:1118209@/Customer_service")
-	if dbErr != nil {
-		panic(dbErr)
-	}
-	defer db.Close()
-
-	dbErr = db.Ping()
-	if dbErr != nil {
-		panic(dbErr.Error()) // proper error handling instead of panic in your app
-	}
 	r := mux.NewRouter()
-	datastore := store.New(db)
+	datastore := store.New()
+	defer datastore.Close()
 	service := service.New(datastore)
 	handler := delivery.New(service)
 

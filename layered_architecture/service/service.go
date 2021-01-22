@@ -79,7 +79,7 @@ func (c CustomerService) CreateCustomer(w http.ResponseWriter, cust entities.Cus
 	}
 }
 
-func (c CustomerService) UpadteCustomer(w http.ResponseWriter, id int, customer entities.Customer) {
+func (c CustomerService) UpdateCustomer(w http.ResponseWriter, id int, customer entities.Customer) {
 	if customer.ID != 0 || customer.DOB != "" {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("Can't update Id or DOB"))

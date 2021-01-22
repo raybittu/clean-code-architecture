@@ -10,4 +10,5 @@ type Customer interface {
 	Create(c entities.Customer) (entities.Customer, error)
 	Update(id int, c entities.Customer) (entities.Customer, error)
 	Delete(id int) (entities.Customer, error)
+	Close()
 }

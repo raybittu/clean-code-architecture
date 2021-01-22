@@ -76,7 +76,7 @@ func (c CustomerHandler) PutCustomer(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte("Data format is not correct"))
 		return
 	}
-	c.service.UpadteCustomer(w, id, customer)
+	c.service.UpdateCustomer(w, id, customer)
 
 }
 
