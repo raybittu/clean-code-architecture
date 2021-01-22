@@ -58,3 +58,36 @@ func (c CustomerHandler) PostCustomer(w http.ResponseWriter, r *http.Request) {
 	}
 	c.service.CreateCustomer(w, cust)
 }
+
+func (c CustomerHandler) PutCustomer(w http.ResponseWriter, r *http.Request) {
+	pathParams := mux.Vars(r)["id"]
+	id, err := strconv.Atoi(pathParams)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Invalid id parameter"))
+		return
+	}
+	var customer entities.Customer
+	bodyData, _ := ioutil.ReadAll(r.Body)
+	err = json.Unmarshal(bodyData, &customer)
+
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Data format is not correct"))
+		return
+	}
+	c.service.UpadteCustomer(w, id, customer)
+
+}
+
+func (c CustomerHandler) DeleteCustomer(w http.ResponseWriter, r *http.Request) {
+	pathParams := mux.Vars(r)["id"]
+
+	id, err := strconv.Atoi(pathParams)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("invalid id parameter"))
+		return
+	}
+	c.service.DeleteCustomer(w, id)
+}

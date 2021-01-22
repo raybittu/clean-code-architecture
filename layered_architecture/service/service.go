@@ -6,8 +6,6 @@ import (
 	"layered/architecture/entities"
 	"layered/architecture/store"
 	"net/http"
-	"strings"
-	"time"
 )
 
 type CustomerService struct {
@@ -81,16 +79,43 @@ func (c CustomerService) CreateCustomer(w http.ResponseWriter, cust entities.Cus
 	}
 }
 
-func DateSubstract(d1 string) int {
-	d1_slice := strings.Split(d1, "/")
-
-	newDate := d1_slice[2] + "-" + d1_slice[1] + "-" + d1_slice[0]
-	myDate, err := time.Parse("2006-01-02", newDate)
-
-	if err != nil {
-		//panic(err)
-		return 0
+func (c CustomerService) UpadteCustomer(w http.ResponseWriter, id int, customer entities.Customer) {
+	if customer.ID != 0 || customer.DOB != "" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Can't update Id or DOB"))
+		return
 	}
+	if customer.Name == "" && customer.Address.State == "" && customer.Address.City == "" && customer.Address.StreetName == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("No data to update"))
+		return
+	} else {
+		cust, err := c.store.Update(id, customer)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte("Something went wrong"))
+			return
+		}
+		if cust.ID == 0 {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("This record is not there in our database"))
+			return
+		}
+		json.NewEncoder(w).Encode(cust)
+	}
+}
 
-	return int(time.Now().Unix() - myDate.Unix())
+func (c CustomerService) DeleteCustomer(w http.ResponseWriter, id int) {
+	customer, err := c.store.Delete(id)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte("Something went wrong"))
+		return
+	}
+	if customer.ID == 0 {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte("This record not found in our database"))
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
 }

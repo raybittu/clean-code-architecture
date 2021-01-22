@@ -32,5 +32,7 @@ func main() {
 	r.HandleFunc("/customer", handler.GetByName).Methods(http.MethodGet)
 	r.HandleFunc("/customer/{id}", handler.GetById).Methods(http.MethodGet)
 	r.HandleFunc("/customer", handler.PostCustomer).Methods(http.MethodPost)
+	r.HandleFunc("/customer/{id}", handler.PutCustomer).Methods(http.MethodPut)
+	r.HandleFunc("/customer/{id}", handler.DeleteCustomer).Methods(http.MethodDelete)
 	log.Fatal(http.ListenAndServe(":8080", r))
 }
