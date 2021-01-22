@@ -13,10 +13,10 @@ import (
 )
 
 type CustomerHandler struct {
-	service service.CustomerService
+	service service.Customer
 }
 
-func New(customer service.CustomerService) CustomerHandler {
+func New(customer service.Customer) CustomerHandler {
 	return CustomerHandler{service: customer}
 }
 
@@ -29,7 +29,7 @@ func (c CustomerHandler) GetById(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	c.service.GetById(w, id)
+	c.service.GetByID(w, id)
 
 }
 

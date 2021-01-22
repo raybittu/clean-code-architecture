@@ -12,11 +12,11 @@ type CustomerService struct {
 	store store.Customer
 }
 
-func New(customer store.Customer) CustomerService {
+func New(customer store.Customer) Customer {
 	return CustomerService{store: customer}
 }
 
-func (c CustomerService) GetById(w http.ResponseWriter, id int) {
+func (c CustomerService) GetByID(w http.ResponseWriter, id int) {
 	if id <= 0 {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("id can't be less than 1"))
