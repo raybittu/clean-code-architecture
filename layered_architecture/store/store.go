@@ -29,6 +29,7 @@ func New() Customer {
 }
 
 func (c CustomerStore) GetByID(id int) (entities.Customer, error) {
+
 	rows, err := c.db.Query("select * from cust inner join addrs on cust.id=addrs.cus_id and cust.id=? order by cust.id, addrs.id", id)
 	if err != nil {
 		return entities.Customer{}, err
@@ -37,7 +38,7 @@ func (c CustomerStore) GetByID(id int) (entities.Customer, error) {
 	var cust entities.Customer
 
 	for rows.Next() {
-		rows.Scan(&cust.ID, &cust.Name, &cust.DOB, &cust.Address.ID, &cust.Address.StreetName, &cust.Address.City, &cust.Address.State, &cust.Address.CusId)
+		_ = rows.Scan(&cust.ID, &cust.Name, &cust.DOB, &cust.Address.ID, &cust.Address.StreetName, &cust.Address.City, &cust.Address.State, &cust.Address.CusId)
 	}
 
 	return cust, nil
@@ -60,7 +61,7 @@ func (c CustomerStore) GetByName(name string) ([]entities.Customer, error) {
 
 	for rows.Next() {
 		var cust entities.Customer
-		err = rows.Scan(&cust.ID, &cust.Name, &cust.DOB, &cust.Address.ID, &cust.Address.StreetName, &cust.Address.City, &cust.Address.State, &cust.Address.CusId)
+		_ = rows.Scan(&cust.ID, &cust.Name, &cust.DOB, &cust.Address.ID, &cust.Address.StreetName, &cust.Address.City, &cust.Address.State, &cust.Address.CusId)
 		customer = append(customer, cust)
 	}
 
@@ -124,7 +125,7 @@ func (c CustomerStore) Update(id int, customer entities.Customer) (entities.Cust
 	rows, _ := c.db.Query("select * from cust inner join addrs on cust.id=addrs.cus_id and cust.id=?", id)
 	var cust entities.Customer
 	for rows.Next() {
-		rows.Scan(&cust.ID, &cust.Name, &cust.DOB, &cust.Address.ID, &cust.Address.StreetName, &cust.Address.City, &cust.Address.State, &cust.Address.CusId)
+		_ = rows.Scan(&cust.ID, &cust.Name, &cust.DOB, &cust.Address.ID, &cust.Address.StreetName, &cust.Address.City, &cust.Address.State, &cust.Address.CusId)
 	}
 	return cust, nil
 }
@@ -136,7 +137,7 @@ func (c CustomerStore) Delete(id int) (entities.Customer, error) {
 	}
 	var cust entities.Customer
 	for rows.Next() {
-		rows.Scan(&cust.ID, &cust.Name, &cust.DOB, &cust.Address.ID, &cust.Address.StreetName, &cust.Address.City, &cust.Address.State, &cust.Address.CusId)
+		_ = rows.Scan(&cust.ID, &cust.Name, &cust.DOB, &cust.Address.ID, &cust.Address.StreetName, &cust.Address.City, &cust.Address.State, &cust.Address.CusId)
 	}
 	_, err = c.db.Exec("delete from cust where id=?", id)
 	if err != nil {

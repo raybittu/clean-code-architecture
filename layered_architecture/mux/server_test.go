@@ -30,9 +30,9 @@ func TestGetCustomers(t *testing.T) {
 		w := httptest.NewRecorder()
 		GetCustomersHandler(w, req)
 		resp := w.Result()
-		body, err := ioutil.ReadAll(resp.Body)
+		body, _ := ioutil.ReadAll(resp.Body)
 		var cust []Customer
-		err = json.Unmarshal(body, &cust)
+		err := json.Unmarshal(body, &cust)
 
 		if err != nil {
 			log.Fatal(err)
@@ -64,9 +64,9 @@ func TestGetCustomer(t *testing.T) {
 		w := httptest.NewRecorder()
 		GetCustomerHandler(w, req)
 		resp := w.Result()
-		body, err := ioutil.ReadAll(resp.Body)
+		body, _ := ioutil.ReadAll(resp.Body)
 		var cust Customer
-		err = json.Unmarshal(body, &cust)
+		err := json.Unmarshal(body, &cust)
 
 		if err != nil {
 			log.Fatal(err)
@@ -97,9 +97,9 @@ func TestPostCustomer(t *testing.T) {
 		w := httptest.NewRecorder()
 		PostCustomerHandler(w, req)
 		resp := w.Result()
-		body, err := ioutil.ReadAll(resp.Body)
+		body, _ := ioutil.ReadAll(resp.Body)
 		var cust Customer
-		err = json.Unmarshal(body, &cust)
+		err := json.Unmarshal(body, &cust)
 
 		if err != nil {
 			log.Fatal(err)
@@ -132,9 +132,9 @@ func TestDeleteCustomer(t *testing.T) {
 		w := httptest.NewRecorder()
 		DeleteCustomerHandler(w, req)
 		resp := w.Result()
-		body, err := ioutil.ReadAll(resp.Body)
+		body, _ := ioutil.ReadAll(resp.Body)
 		var cust Customer
-		err = json.Unmarshal(body, &cust)
+		err := json.Unmarshal(body, &cust)
 
 		if err != nil {
 			log.Fatal(err)

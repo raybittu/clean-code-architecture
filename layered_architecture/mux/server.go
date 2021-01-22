@@ -50,7 +50,7 @@ func GetCustomersData(db *sql.DB, name string) []Customer {
 
 	for rows.Next() {
 		var c Customer
-		err = rows.Scan(&c.Id, &c.Name, &c.Dob, &c.Address.Id, &c.Address.StreetName, &c.Address.City, &c.Address.State, &c.Address.CusId)
+		_ = rows.Scan(&c.Id, &c.Name, &c.Dob, &c.Address.Id, &c.Address.StreetName, &c.Address.City, &c.Address.State, &c.Address.CusId)
 		customer = append(customer, c)
 	}
 
@@ -67,7 +67,7 @@ func GetCustomersHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		C = GetCustomersData(db, "")
 	}
-	json.NewEncoder(w).Encode(C)
+	_ = json.NewEncoder(w).Encode(C)
 
 }
 
@@ -81,7 +81,7 @@ func GetCustomerData(db *sql.DB, id int) Customer {
 	var c Customer
 
 	for rows.Next() {
-		rows.Scan(&c.Id, &c.Name, &c.Dob, &c.Address.Id, &c.Address.StreetName, &c.Address.City, &c.Address.State, &c.Address.CusId)
+		_ = rows.Scan(&c.Id, &c.Name, &c.Dob, &c.Address.Id, &c.Address.StreetName, &c.Address.City, &c.Address.State, &c.Address.CusId)
 	}
 
 	return c
@@ -96,13 +96,13 @@ func GetCustomerHandler(w http.ResponseWriter, r *http.Request) {
 	//pathParams, err := strconv.Atoi(strings.Split(r.URL.Path, "/")[2])
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(Customer{})
+		_ = json.NewEncoder(w).Encode(Customer{})
 	} else {
 		c = GetCustomerData(db, id)
 		if c.Id == 0 {
 			w.WriteHeader(http.StatusNotFound)
 		}
-		json.NewEncoder(w).Encode(c)
+		_ = json.NewEncoder(w).Encode(c)
 	}
 }
 
@@ -157,18 +157,18 @@ func PostCustomerHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		//log.Fatal(err)
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(Customer{})
+		_ = json.NewEncoder(w).Encode(Customer{})
 	} else {
 		if cust.Name == "" || cust.Dob == "" || cust.Address.StreetName == "" || cust.Address.City == "" || cust.Address.State == "" {
 			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(Customer{})
+			_ = json.NewEncoder(w).Encode(Customer{})
 		} else if timestamp := DateSubstract(cust.Dob); timestamp/(3600*24*12*30) < 18 {
 			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(Customer{})
+			_ = json.NewEncoder(w).Encode(Customer{})
 		} else {
 			cust = InsertCustomerData(db, cust)
 			w.WriteHeader(http.StatusCreated)
-			json.NewEncoder(w).Encode(cust)
+			_ = json.NewEncoder(w).Encode(cust)
 		}
 	}
 }
@@ -208,7 +208,7 @@ func UpdateData(db *sql.DB, id int, c Customer) Customer {
 	rows, _ := db.Query("select * from cust inner join addrs on cust.id=addrs.cus_id and cust.id=?", id)
 	var customer Customer
 	for rows.Next() {
-		rows.Scan(&customer.Id, &customer.Name, &customer.Dob, &customer.Address.Id, &customer.Address.StreetName, &customer.Address.City, &customer.Address.State, &customer.Address.CusId)
+		_ = rows.Scan(&customer.Id, &customer.Name, &customer.Dob, &customer.Address.Id, &customer.Address.StreetName, &customer.Address.City, &customer.Address.State, &customer.Address.CusId)
 	}
 	return customer
 }
@@ -218,7 +218,7 @@ func PutCustomerHandler(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(pathParams)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(Customer{})
+		_ = json.NewEncoder(w).Encode(Customer{})
 	} else {
 		var customer Customer
 		bodyData, _ := ioutil.ReadAll(r.Body)
@@ -227,14 +227,14 @@ func PutCustomerHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			//log.Fatal(err)
 			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(Customer{})
+			_ = json.NewEncoder(w).Encode(Customer{})
 		}
 		if (customer.Id != 0 || customer.Dob != "") || (customer.Name == "" && customer.Address.State == "" && customer.Address.City == "" && customer.Address.StreetName == "") {
 			w.WriteHeader(http.StatusBadRequest)
-			json.NewEncoder(w).Encode(Customer{})
+			_ = json.NewEncoder(w).Encode(Customer{})
 		} else {
 			customer = UpdateData(db, id, customer)
-			json.NewEncoder(w).Encode(customer)
+			_ = json.NewEncoder(w).Encode(customer)
 		}
 	}
 }
@@ -247,9 +247,9 @@ func DeleteData(db *sql.DB, id int) Customer {
 	}
 	var c Customer
 	for rows.Next() {
-		rows.Scan(&c.Id, &c.Name, &c.Dob, &c.Address.Id, &c.Address.StreetName, &c.Address.City, &c.Address.State, &c.Address.CusId)
+		_ = rows.Scan(&c.Id, &c.Name, &c.Dob, &c.Address.Id, &c.Address.StreetName, &c.Address.City, &c.Address.State, &c.Address.CusId)
 	}
-	rows, err = db.Query("delete from cust where id=?", id)
+	_, err = db.Query("delete from cust where id=?", id)
 	if err != nil {
 		log.Fatal(err)
 		return Customer{}
@@ -266,16 +266,16 @@ func DeleteCustomerHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		//log.Fatal(err)
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(Customer{})
+		_ = json.NewEncoder(w).Encode(Customer{})
 	} else {
 		c := DeleteData(db, id)
 		if c.Id == 0 {
 			w.WriteHeader(http.StatusNotFound)
-			json.NewEncoder(w).Encode(c)
+			_ = json.NewEncoder(w).Encode(c)
 		} else {
 			w.WriteHeader(http.StatusNoContent)
 			//fmt.Println(c)
-			json.NewEncoder(w).Encode(c)
+			_ = json.NewEncoder(w).Encode(c)
 		}
 	}
 

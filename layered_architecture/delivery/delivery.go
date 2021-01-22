@@ -53,7 +53,7 @@ func (c CustomerHandler) PostCustomer(w http.ResponseWriter, r *http.Request) {
 	err = json.Unmarshal(body, &cust)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("invalid data format"))
+		_, _ = w.Write([]byte("invalid data format"))
 		return
 	}
 	c.service.CreateCustomer(w, cust)
@@ -64,7 +64,7 @@ func (c CustomerHandler) PutCustomer(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(pathParams)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Invalid id parameter"))
+		_, _ = w.Write([]byte("Invalid id parameter"))
 		return
 	}
 	var customer entities.Customer
@@ -73,7 +73,7 @@ func (c CustomerHandler) PutCustomer(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Data format is not correct"))
+		_, _ = w.Write([]byte("Data format is not correct"))
 		return
 	}
 	c.service.UpdateCustomer(w, id, customer)
@@ -86,7 +86,7 @@ func (c CustomerHandler) DeleteCustomer(w http.ResponseWriter, r *http.Request) 
 	id, err := strconv.Atoi(pathParams)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("invalid id parameter"))
+		_, _ = w.Write([]byte("invalid id parameter"))
 		return
 	}
 	c.service.DeleteCustomer(w, id)
