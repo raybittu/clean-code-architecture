@@ -2,13 +2,13 @@ package service
 
 import (
 	"layered/architecture/entities"
-	"net/http"
 )
 
 type Customer interface {
-	GetByID(w http.ResponseWriter, id int)
-	GetByName(w http.ResponseWriter, name string)
-	CreateCustomer(w http.ResponseWriter, c entities.Customer)
-	UpdateCustomer(w http.ResponseWriter, id int, c entities.Customer)
-	DeleteCustomer(w http.ResponseWriter, id int)
+	GetByID(id int) (entities.Customer, error)
+	GetAll() ([]entities.Customer, error)
+	GetByName(name string) ([]entities.Customer, error)
+	CreateCustomer(c entities.Customer) (entities.Customer, error)
+	UpdateCustomer(id int, c entities.Customer) (entities.Customer, error)
+	DeleteCustomer(id int) (entities.Customer, error)
 }
