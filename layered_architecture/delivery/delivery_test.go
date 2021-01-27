@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io/ioutil"
 	"layered/architecture/entities"
 	"net/http"
@@ -40,11 +39,8 @@ func TestCustomerGetById(t *testing.T) {
 
 		resp := w.Result()
 		body, _ := ioutil.ReadAll(resp.Body)
-		err := json.Unmarshal(body, &cust)
-
-		if err != nil {
-			fmt.Println("error is ", err)
-		}
+		//fmt.Println("got ", string(body), " and expected ", v.response)
+		_ = json.Unmarshal(body, &cust)
 
 		if !reflect.DeepEqual(cust, v.response) {
 			t.Errorf("[TEST%d]Failed. Got %v\tExpected %v\n", i+1, cust, v.response)
@@ -78,11 +74,8 @@ func TestCustomerGetByName(t *testing.T) {
 
 		resp := w.Result()
 		body, _ := ioutil.ReadAll(resp.Body)
-		err := json.Unmarshal(body, &cust)
+		_ = json.Unmarshal(body, &cust)
 
-		if err != nil {
-
-		}
 		if !reflect.DeepEqual(cust, v.response) {
 			t.Errorf("[TEST%d]Failed. Got %v\tExpected %v\n", i+1, cust, v.response)
 		}
@@ -114,11 +107,8 @@ func TestCustomerCreate(t *testing.T) {
 
 		resp := w.Result()
 		body, _ := ioutil.ReadAll(resp.Body)
-		err := json.Unmarshal(body, &cust)
+		_ = json.Unmarshal(body, &cust)
 
-		if err != nil {
-
-		}
 		if !reflect.DeepEqual(cust, v.response) {
 			t.Errorf("[TEST%d]Failed. Got %v\tExpected %v\n", i+1, cust, v.response)
 		}
@@ -152,14 +142,35 @@ func TestCustomerPut(t *testing.T) {
 
 		resp := w.Result()
 		body, _ := ioutil.ReadAll(resp.Body)
-		err := json.Unmarshal(body, &cust)
+		_ = json.Unmarshal(body, &cust)
 
-		if err != nil {
-
-		}
 		if !reflect.DeepEqual(cust, v.response) {
 			t.Errorf("[TEST%d]Failed. Got %v\tExpected %v\n", i+1, cust, v.response)
 		}
+
+		if w.Code != testcases[i].code {
+			t.Errorf("[TEST%d]Failed. Got %v\tExpected %v\n", i+1, w.Code, testcases[i].code)
+		}
+	}
+}
+
+func TestCustomerDelete(t *testing.T) {
+	testcases := []struct {
+		id       string
+		response entities.Customer
+		code     int
+	}{
+		{"69", entities.Customer{ID: 69, Name: "bittu ray", DOB: "10/10/2000", Address: entities.Address{ID: 64, StreetName: "HSR", City: "bangaluru", State: "karnataka", CusId: 69}}, http.StatusNoContent},
+	}
+
+	for i := range testcases {
+		req := httptest.NewRequest(http.MethodDelete, "/customer/", nil)
+		req = mux.SetURLVars(req, map[string]string{"id": testcases[i].id})
+		w := httptest.NewRecorder()
+
+		a := New(mockDatastore{})
+
+		a.DeleteCustomer(w, req)
 
 		if w.Code != testcases[i].code {
 			t.Errorf("[TEST%d]Failed. Got %v\tExpected %v\n", i+1, w.Code, testcases[i].code)
@@ -209,5 +220,8 @@ func (c mockDatastore) UpdateCustomer(id int, customer entities.Customer) (entit
 }
 
 func (c mockDatastore) DeleteCustomer(id int) (entities.Customer, error) {
-	return entities.Customer{}, nil
+	if id == 69 {
+		return entities.Customer{ID: 69, Name: "bittu ray", DOB: "10/10/2000", Address: entities.Address{ID: 64, StreetName: "HSR", City: "bangaluru", State: "karnataka", CusId: 69}}, nil
+	}
+	return entities.Customer{}, errors.New("some error")
 }
