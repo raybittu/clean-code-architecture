@@ -4,6 +4,7 @@ import "C"
 import (
 	"database/sql"
 	"layered/architecture/entities"
+	"layered/architecture/errors"
 )
 
 type CustomerStore struct {
@@ -35,7 +36,7 @@ func (c CustomerStore) GetByID(id int) (entities.Customer, error) {
 	DataInterface = append(DataInterface, id)
 	rows, err := c.db.Query(query, DataInterface...)
 	if err != nil {
-		return entities.Customer{}, err
+		return entities.Customer{}, errors.ErrDBQuery
 	}
 
 	var cust entities.Customer
@@ -58,7 +59,7 @@ func (c CustomerStore) GetByName(name string) ([]entities.Customer, error) {
 	rows, err := c.db.Query(query, data...)
 
 	if err != nil {
-		return []entities.Customer(nil), err
+		return []entities.Customer(nil), errors.ErrDBQuery
 	}
 	var customer []entities.Customer
 
@@ -79,13 +80,13 @@ func (c CustomerStore) Create(customer entities.Customer) (entities.Customer, er
 
 	rows, err := c.db.Exec(query, CustomerData...)
 	if err != nil {
-		return entities.Customer{}, err
+		return entities.Customer{}, errors.ErrDBExec
 	}
 
 	id, err1 := rows.LastInsertId()
 
 	if err1 != nil {
-		return entities.Customer{}, err
+		return entities.Customer{}, errors.ErrDBExec
 	} else {
 		query = "insert into addrs (streetname, city, state, cus_id) values (?, ?, ?, ?)"
 		var AddressData []interface{}
@@ -101,17 +102,19 @@ func (c CustomerStore) Create(customer entities.Customer) (entities.Customer, er
 			customer.Address.CusId = int(id)
 			return customer, nil
 		}
-		return entities.Customer{}, err
+		return entities.Customer{}, errors.ErrDBExec
 	}
 }
 
 func (c CustomerStore) Update(id int, customer entities.Customer) (entities.Customer, error) {
+
 	if customer.Name != "" {
 		query := "update cust set name=? where id=?"
 		_, err := c.db.Exec(query, customer.Name, id)
 		if err != nil {
-			return entities.Customer{}, nil
+			return entities.Customer{}, errors.ErrDBExec
 		}
+
 	}
 	var data []interface{}
 	query := "update addrs set "
@@ -133,7 +136,7 @@ func (c CustomerStore) Update(id int, customer entities.Customer) (entities.Cust
 	_, err := c.db.Exec(query, data...)
 
 	if err != nil {
-		return entities.Customer{}, err
+		return entities.Customer{}, errors.ErrDBExec
 	}
 	query = "select * from cust inner join addrs on cust.id=addrs.cus_id and cust.id=?"
 	rows, _ := c.db.Query(query, id)
@@ -148,7 +151,7 @@ func (c CustomerStore) Delete(id int) (entities.Customer, error) {
 	query := "select * from cust inner join addrs on addrs.cus_id=cust.id and cust.id=? order by cust.id, addrs.id"
 	rows, err := c.db.Query(query, id)
 	if err != nil {
-		return entities.Customer{}, err
+		return entities.Customer{}, errors.ErrDBQuery
 	}
 	var cust entities.Customer
 	for rows.Next() {
@@ -158,7 +161,7 @@ func (c CustomerStore) Delete(id int) (entities.Customer, error) {
 	query = "delete from cust where id=?"
 	_, err = c.db.Exec(query, id)
 	if err != nil {
-		return entities.Customer{}, err
+		return entities.Customer{}, errors.ErrDBExec
 	}
 	return cust, nil
 }

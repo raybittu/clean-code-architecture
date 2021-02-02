@@ -1,9 +1,8 @@
 package service
 
-import "C"
 import (
-	"errors"
 	"layered/architecture/entities"
+	"layered/architecture/errors"
 	"layered/architecture/store"
 )
 
@@ -16,11 +15,7 @@ func New(customer store.Customer) Customer {
 }
 
 func (c CustomerService) GetByID(id int) (entities.Customer, error) {
-	resp, err := c.store.GetByID(id)
-	if err != nil {
-		return entities.Customer{}, err
-	}
-	return resp, nil
+	return c.store.GetByID(id)
 }
 
 func (c CustomerService) GetByName(name string) ([]entities.Customer, error) {
@@ -33,7 +28,8 @@ func (c CustomerService) GetAll() ([]entities.Customer, error) {
 
 func (c CustomerService) CreateCustomer(cust entities.Customer) (entities.Customer, error) {
 	if timestamp := DateSubstract(cust.DOB); timestamp/(3600*24*12*30) < 18 {
-		return entities.Customer{}, errors.New("You are below 18, so you are not allowed to be our customer")
+
+		return entities.Customer{}, errors.ErrEligibility
 	}
 	return c.store.Create(cust)
 }

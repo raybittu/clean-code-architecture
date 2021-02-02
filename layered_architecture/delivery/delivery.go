@@ -2,8 +2,10 @@ package delivery
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"layered/architecture/entities"
+	"layered/architecture/errors"
 	"layered/architecture/service"
 	"log"
 	"net/http"
@@ -25,26 +27,36 @@ func (c CustomerHandler) GetById(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(pathparams["id"])
 	if err != nil {
-		_, _ = w.Write([]byte("invalid parameter id"))
+		_, _ = w.Write([]byte(errors.ErrInvalidID))
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 	if id <= 0 {
 		w.WriteHeader(http.StatusBadRequest)
-		_, _ = w.Write([]byte("id can't be less than 1"))
+		//err := customerError.MissingParams{Params: []string{"id"}}
+		////fmt.Println(err)
+		//data, err1 := json.Marshal(err.Error())
+		//if err1 != nil {
+		//	w.WriteHeader(http.StatusBadRequest)
+		//}
+		//_, _ = w.Write(data)
+		w.Write([]byte(errors.ErrInvalidID))
 		return
 	}
 	resp, err1 := c.service.GetByID(id)
 
 	if err1 != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		_ = json.NewEncoder(w).Encode([]entities.Customer(nil))
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err1.Error()))
+		//_ = json.NewEncoder(w).Encode([]entities.Customer(nil))
 	} else {
 		if resp.ID == 0 {
 			w.WriteHeader(http.StatusNotFound)
-			_ = json.NewEncoder(w).Encode([]entities.Customer(nil))
+			w.Write([]byte(errors.ErrDBNotFound))
+			//_ = json.NewEncoder(w).Encode([]entities.Customer(nil))
 		} else {
-			_ = json.NewEncoder(w).Encode(resp)
+			body, _ := json.Marshal(resp)
+			_, _ = w.Write(body)
 		}
 	}
 
@@ -58,24 +70,29 @@ func (c CustomerHandler) GetByName(w http.ResponseWriter, r *http.Request) {
 		resp, err1 := c.service.GetAll()
 		if err1 != nil {
 			w.WriteHeader(http.StatusInternalServerError)
-			_ = json.NewEncoder(w).Encode(resp)
+			//_ = json.NewEncoder(w).Encode(resp)
+			w.Write([]byte(err1.Error()))
 			return
 		}
 		if len(resp) == 0 {
 			w.WriteHeader(http.StatusNotFound)
+			//_ = json.NewEncoder(w).Encode(resp)
+			w.Write([]byte(errors.ErrDBNotFound))
+			return
 		}
-		_ = json.NewEncoder(w).Encode(resp)
-		return
 	}
 	resp, err1 := c.service.GetByName(name[0])
 
 	if err1 != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		_ = json.NewEncoder(w).Encode(resp)
+		//_ = json.NewEncoder(w).Encode(resp)
+		w.Write([]byte(err1.Error()))
 		return
 	}
 	if len(resp) == 0 {
 		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte(err1.Error()))
+		return
 	}
 	_ = json.NewEncoder(w).Encode(resp)
 }
@@ -99,6 +116,7 @@ func (c CustomerHandler) PostCustomer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	cust, err1 := c.service.CreateCustomer(cust)
+	fmt.Println(err1)
 	if err1 != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		_, _ = w.Write([]byte(err1.Error()))
@@ -113,7 +131,7 @@ func (c CustomerHandler) PutCustomer(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(pathParams)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		_, _ = w.Write([]byte("Invalid id parameter"))
+		_, _ = w.Write([]byte(errors.ErrInvalidID))
 		return
 	}
 	var customer entities.Customer
@@ -122,7 +140,7 @@ func (c CustomerHandler) PutCustomer(w http.ResponseWriter, r *http.Request) {
 
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		_, _ = w.Write([]byte("Data format is not correct"))
+		_, _ = w.Write([]byte(errors.ErrJSONFormat))
 		return
 	}
 	if customer.ID != 0 || customer.DOB != "" {
@@ -138,13 +156,8 @@ func (c CustomerHandler) PutCustomer(w http.ResponseWriter, r *http.Request) {
 	cust, err1 := c.service.UpdateCustomer(id, customer)
 
 	if err1 != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		_, _ = w.Write([]byte("Something went wrong"))
-		return
-	}
-	if cust.ID == 0 {
 		w.WriteHeader(http.StatusNotFound)
-		_, _ = w.Write([]byte("This record is not there in our database"))
+		_, _ = w.Write([]byte(err1.Error()))
 		return
 	}
 	_ = json.NewEncoder(w).Encode(cust)
